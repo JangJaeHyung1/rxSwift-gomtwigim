@@ -43,20 +43,32 @@ class ViewController: UIViewController {
             self?.view.layoutIfNeeded()
         })
     }
+    
     // 본체함수가 끝나고 나서 나중에 실행되는 함수다(메인안에것) = escaping
     func downloadJson(_ url: String) -> Observable<String?> {
-        return Observable.create(){ f in
-            DispatchQueue.global().async {
-                let url = URL(string: url)!
-                let data = try! Data(contentsOf: url)
-                let json = String(data: data, encoding: .utf8)
-                DispatchQueue.main.async {
-                    f.onNext(json)
-                }
-            }
-            
+        // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
+        return Observable.create { (emitter) -> Disposable in
+            emitter.onNext("데이터전달")
+            emitter.onNext("여러개 전달가능") // event의 next로 한번씩 전달된다.
+            //전달끝났으면
+            emitter.onCompleted()
             return Disposables.create()
         }
+        
+        
+//        return Observable.create(){ f in
+//            DispatchQueue.global().async {
+//                let url = URL(string: url)!
+//                let data = try! Data(contentsOf: url)
+//                let json = String(data: data, encoding: .utf8)
+//                DispatchQueue.main.async {
+//                    f.onNext(json)
+//                    f.onCompleted()
+//                }
+//            }
+//
+//            return Disposables.create()
+//        }
     }
     
     // MARK: SYNC
@@ -68,8 +80,8 @@ class ViewController: UIViewController {
         self.setVisibleWithAnimation(self.activityIndicator, true)
         
         
-        
-        downloadJson(MEMBER_LIST_URL)
+        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
+        let disposable = downloadJson(MEMBER_LIST_URL)
             .subscribe{ event in
                 switch event {
                 case .next(let json):
@@ -77,11 +89,21 @@ class ViewController: UIViewController {
                     self.setVisibleWithAnimation(self.activityIndicator, false)
                     
                 case .completed:
+                    //순환참조 제거 f.onCompleted()가 시행되면서 클로저가 사라지면서 self에 대한 reference count가 제거됨
                     break
                 case .error(_):
                     break
                 }
             }
+        
+//        끝나지 않았어도 취소가 됨
+//        disposable.dispose()
+        
+        
+        // MARK: rxSwift 사용방법
+        // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
+        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
+        
     }
 }
 
