@@ -49,36 +49,37 @@ class ViewController: UIViewController {
         // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
         //MARK: sugar API
 //        return Observable.just("Hi")
-        return Observable.from(["Hi","World"])
-//        return Observable.create { (emitter) -> Disposable in
+//        return Observable.from(["Hi","World"])
+        return Observable.create { (emitter) -> Disposable in
 //            emitter.onNext("hi")
 //            emitter.onCompleted()
 //            return Disposables.create()
 //        }
+//    }
+        
+        
+            let url = URL(string: url)!
+
+            let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+                guard error == nil else{
+                    emitter.onError(error!)
+                    return
+                }
+
+                if let data = data, let json = String(data: data, encoding: .utf8){
+                    emitter.onNext(json)
+                }
+
+                emitter.onCompleted()
+
+            }
+            task.resume()
+
+            return Disposables.create(){
+                task.cancel()
+            }
+        }
     }
-        
-        
-//            let url = URL(string: url)!
-//
-//            let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
-//                guard error == nil else{
-//                    emitter.onError(error!)
-//                    return
-//                }
-//
-//                if let data = data, let json = String(data: data, encoding: .utf8){
-//                    emitter.onNext(json)
-//                }
-//
-//                emitter.onCompleted()
-//
-//            }
-//            task.resume()
-//
-//            return Disposables.create(){
-//                task.cancel()
-//            }
-//        }
         
         
 //        return Observable.create(){ f in
@@ -106,9 +107,9 @@ class ViewController: UIViewController {
         
         
         
-        let disposable = downloadJson(MEMBER_LIST_URL)
+        _ = downloadJson(MEMBER_LIST_URL)
             //sugar api
-            .subscribe(onNext: {print($0)}, onCompleted: {print("com")} )
+//            .subscribe(onNext: {print($0)}, onCompleted: {print("com")} )
             // 2. Observable로 오는 데이터를 받아서 처리하는 방법
 //            .subscribe { (event) in
 //                switch event{
@@ -126,7 +127,22 @@ class ViewController: UIViewController {
         
         
         
-        
+        //sugar api main.async
+            .observeOn(MainScheduler.instance) // sugar : operator
+            .map({ (json)  in json?.count ?? 0 }) // sugar : operator
+            .filter({ (cnt) -> Bool in cnt > 0 }) // sugar : operator
+            .map({ "\($0)" }) // sugar : operator
+            .subscribe { (json) in
+                self.editView.text = json
+                self.setVisibleWithAnimation(self.activityIndicator, false)
+            } onError: { (error) in
+                
+            } onCompleted: {
+                
+            } onDisposed: {
+                
+            }
+
 //            .debug()
 //            .subscribe{ event in
 //                switch event {
