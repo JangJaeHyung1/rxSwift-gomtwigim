@@ -48,11 +48,26 @@ class ViewController: UIViewController {
     func downloadJson(_ url: String) -> Observable<String?> {
         // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
         return Observable.create { (emitter) -> Disposable in
-            emitter.onNext("데이터전달")
-            emitter.onNext("여러개 전달가능") // event의 next로 한번씩 전달된다.
-            //전달끝났으면
-            emitter.onCompleted()
-            return Disposables.create()
+            let url = URL(string: url)!
+            
+            let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+                guard error == nil else{
+                    emitter.onError(error!)
+                    return
+                }
+                
+                if let data = data, let json = String(data: data, encoding: .utf8){
+                    emitter.onNext(json)
+                }
+
+                emitter.onCompleted()
+                
+            }
+            task.resume()
+            
+            return Disposables.create(){
+                task.cancel()
+            }
         }
         
         
