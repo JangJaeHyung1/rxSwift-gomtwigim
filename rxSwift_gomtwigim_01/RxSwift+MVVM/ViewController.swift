@@ -47,28 +47,38 @@ class ViewController: UIViewController {
     // 본체함수가 끝나고 나서 나중에 실행되는 함수다(메인안에것) = escaping
     func downloadJson(_ url: String) -> Observable<String?> {
         // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
-        return Observable.create { (emitter) -> Disposable in
-            let url = URL(string: url)!
-            
-            let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
-                guard error == nil else{
-                    emitter.onError(error!)
-                    return
-                }
-                
-                if let data = data, let json = String(data: data, encoding: .utf8){
-                    emitter.onNext(json)
-                }
-
-                emitter.onCompleted()
-                
-            }
-            task.resume()
-            
-            return Disposables.create(){
-                task.cancel()
-            }
-        }
+        //MARK: sugar API
+//        return Observable.just("Hi")
+        return Observable.from(["Hi","World"])
+//        return Observable.create { (emitter) -> Disposable in
+//            emitter.onNext("hi")
+//            emitter.onCompleted()
+//            return Disposables.create()
+//        }
+    }
+        
+        
+//            let url = URL(string: url)!
+//
+//            let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+//                guard error == nil else{
+//                    emitter.onError(error!)
+//                    return
+//                }
+//
+//                if let data = data, let json = String(data: data, encoding: .utf8){
+//                    emitter.onNext(json)
+//                }
+//
+//                emitter.onCompleted()
+//
+//            }
+//            task.resume()
+//
+//            return Disposables.create(){
+//                task.cancel()
+//            }
+//        }
         
         
 //        return Observable.create(){ f in
@@ -84,7 +94,7 @@ class ViewController: UIViewController {
 //
 //            return Disposables.create()
 //        }
-    }
+//    }
     
     // MARK: SYNC
     
@@ -95,21 +105,45 @@ class ViewController: UIViewController {
         self.setVisibleWithAnimation(self.activityIndicator, true)
         
         
-        // 2. Observable로 오는 데이터를 받아서 처리하는 방법
+        
         let disposable = downloadJson(MEMBER_LIST_URL)
-            .subscribe{ event in
-                switch event {
-                case .next(let json):
-                    self.editView.text = json
-                    self.setVisibleWithAnimation(self.activityIndicator, false)
-                    
-                case .completed:
-                    //순환참조 제거 f.onCompleted()가 시행되면서 클로저가 사라지면서 self에 대한 reference count가 제거됨
-                    break
-                case .error(_):
-                    break
-                }
-            }
+            //sugar api
+            .subscribe(onNext: {print($0)}, onCompleted: {print("com")} )
+            // 2. Observable로 오는 데이터를 받아서 처리하는 방법
+//            .subscribe { (event) in
+//                switch event{
+//
+//                case .next(let json):
+//                    print(json)
+//                    break
+//                case .error(_):
+//                    break
+//                case .completed:
+//                    break
+//                }
+//            }
+//        disposable.dispose()
+        
+        
+        
+        
+//            .debug()
+//            .subscribe{ event in
+//                switch event {
+//                case .next(let json):
+//                    DispatchQueue.main.async {
+//                        self.editView.text = json
+//                        self.setVisibleWithAnimation(self.activityIndicator, false)
+//                    }
+//
+//
+//                case .completed:
+//                    //순환참조 제거 f.onCompleted()가 시행되면서 클로저가 사라지면서 self에 대한 reference count가 제거됨
+//                    break
+//                case .error(_):
+//                    break
+//                }
+//            }
         
 //        끝나지 않았어도 취소가 됨
 //        disposable.dispose()
