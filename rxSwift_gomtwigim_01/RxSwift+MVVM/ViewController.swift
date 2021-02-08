@@ -25,6 +25,8 @@ let MEMBER_LIST_URL = "https://my.api.mockaroo.com/members_with_avatar.json?key=
 //}
 
 class ViewController: UIViewController {
+    var disposeBag = DisposeBag()
+    
     @IBOutlet var timerLabel: UILabel!
     @IBOutlet var editView: UITextView!
     
@@ -45,7 +47,7 @@ class ViewController: UIViewController {
     }
     
     // 본체함수가 끝나고 나서 나중에 실행되는 함수다(메인안에것) = escaping
-    func downloadJson(_ url: String) -> Observable<String?> {
+    func downloadJson(_ url: String) -> Observable<String> {
         // 1. 비동기로 생기는 데이터를 Observable로 감싸서 리턴하는 방법
         //MARK: sugar API
 //        return Observable.just("Hi")
@@ -107,7 +109,10 @@ class ViewController: UIViewController {
         
         
         
-        _ = downloadJson(MEMBER_LIST_URL)
+        let jsonObservable = downloadJson(MEMBER_LIST_URL)
+        let helloObservable = Observable.just("hello")
+        Observable.zip(jsonObservable, helloObservable){ $1 + "\n" + $0 }
+        
             //sugar api
 //            .subscribe(onNext: {print($0)}, onCompleted: {print("com")} )
             // 2. Observable로 오는 데이터를 받아서 처리하는 방법
@@ -128,10 +133,12 @@ class ViewController: UIViewController {
         
         
         //sugar api main.async
+            
+//            .map({ (json)  in json?.count ?? 0 }) // sugar : operator
+//            .filter({ (cnt) -> Bool in cnt > 0 }) // sugar : operator
+//            .map({ "\($0)" }) // sugar : operator
             .observeOn(MainScheduler.instance) // sugar : operator
-            .map({ (json)  in json?.count ?? 0 }) // sugar : operator
-            .filter({ (cnt) -> Bool in cnt > 0 }) // sugar : operator
-            .map({ "\($0)" }) // sugar : operator
+            .subscribeOn(ConcurrentDispatchQueueScheduler(qos: .default)) // 위치랑 상관없이 첫번째에서 동작 (어느 쓰레드에서 동작할건지 지정하는 오퍼레이터)
             .subscribe { (json) in
                 self.editView.text = json
                 self.setVisibleWithAnimation(self.activityIndicator, false)
@@ -141,7 +148,7 @@ class ViewController: UIViewController {
                 
             } onDisposed: {
                 
-            }
+            }.disposed(by: disposeBag)
 
 //            .debug()
 //            .subscribe{ event in
