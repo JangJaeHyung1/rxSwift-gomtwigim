@@ -26,6 +26,7 @@ class DetailViewController: UIViewController {
         setData(data)
     }
 
+    //setData
     func setData(_ data: Member) {
         loadImage(from: data.avatar)
             .observeOn(MainScheduler.instance)
@@ -43,6 +44,7 @@ class DetailViewController: UIViewController {
             .map { $0.replacingOccurrences(of: "size=50x50&", with: "") }
     }
 
+    //create
     private func loadImage(from url: String) -> Observable<UIImage?> {
         return Observable.create { emitter in
             let task = URLSession.shared.dataTask(with: URL(string: url)!) { data, _, error in

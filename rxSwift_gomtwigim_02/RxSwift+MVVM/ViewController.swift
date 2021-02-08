@@ -27,6 +27,7 @@ class ViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        //MARK: subsribe data 불러와서 저장
         loadMembers()
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { [weak self] members in
@@ -36,6 +37,7 @@ class ViewController: UITableViewController {
             .disposed(by: disposeBag)
     }
 
+    //MARK: observable create - json parsing
     func loadMembers() -> Observable<[Member]> {
         return Observable.create { emitter in
             let task = URLSession.shared.dataTask(with: URL(string: MEMBER_LIST_URL)!) { data, _, error in
@@ -100,6 +102,7 @@ class MemberItemCell: UITableViewCell {
     @IBOutlet var job: UILabel!
     @IBOutlet var age: UILabel!
 
+    //MARK: setData (Main.Async) - loadImg, lblText
     func setData(_ data: Member) {
         loadImage(from: data.avatar)
             .observeOn(MainScheduler.instance)
