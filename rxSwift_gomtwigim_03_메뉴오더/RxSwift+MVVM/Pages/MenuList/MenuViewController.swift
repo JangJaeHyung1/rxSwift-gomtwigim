@@ -7,12 +7,26 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
 
 class MenuViewController: UIViewController {
     // MARK: - Life Cycle
 
+    let viewModel = MenuListViewModel()
+    var disposeBag = DisposeBag()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        updateUI()
+        
+        viewModel.totalPrice
+            .scan(0, accumulator: +)
+            .map{ $0.currencyKR() }
+            .subscribe(onNext:{
+                self.totalPrice.text = $0
+            })
+            .disposed(by: disposeBag)
     }
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -42,21 +56,30 @@ class MenuViewController: UIViewController {
     @IBAction func onOrder(_ sender: UIButton) {
         // TODO: no selection
         // showAlert("Order Fail", "No Orders")
-        performSegue(withIdentifier: "OrderViewController", sender: nil)
+//        performSegue(withIdentifier: "OrderViewController", sender: nil)
+        
+        viewModel.totalPrice.onNext(100)
+        
+        
+    }
+    func updateUI(){
+        itemCountLabel.text = "\(viewModel.itemsCount)"
+//        totalPrice.text = viewModel.totalPrice.currencyKR()
     }
 }
 
 extension MenuViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 20
+        return viewModel.menuArray.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MenuItemTableViewCell") as! MenuItemTableViewCell
 
-        cell.title.text = "MENU \(indexPath.row)"
-        cell.price.text = "\(indexPath.row * 100)"
-        cell.count.text = "0"
+        let menu = viewModel.menuArray[indexPath.row]
+        cell.title.text = menu.name
+        cell.price.text = "\(menu.price)"
+        cell.count.text = "\(menu.count)"
 
         return cell
     }
