@@ -8,24 +8,46 @@
 
 import UIKit
 import RxSwift
-import RxCocoa
+import RxCocoa // rxSwift 의 요소들을 UIKit View 들에 Extension 하여 접목시킨 라이브러리입니다. (.rx)
 
 class MenuViewController: UIViewController {
     // MARK: - Life Cycle
 
+    let cellId = "MenuItemTableViewCell"
     let viewModel = MenuListViewModel()
     var disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        updateUI()
+        
+//        tableView.dataSource = nil
+        
+        viewModel.menuObservable
+            .observeOn(MainScheduler.instance)
+            .bind(to: tableView.rx.items(cellIdentifier: cellId, cellType: MenuItemTableViewCell.self)){ index, item, cell in
+                
+                cell.title.text = item.name
+                cell.price.text = "\(item.price)"
+                cell.count.text = "\(item.count)"
+            }
+            .disposed(by: disposeBag)
+        
+        viewModel.itemsCount
+            .map{ "\($0)" }
+//            .subscribe(onNext: {
+//                self.itemCountLabel.text = $0
+//            })
+            .observeOn(MainScheduler.instance)
+            .bind(to: itemCountLabel.rx.text) // 순환참조 없이 사용가능
+            .disposed(by: disposeBag)
         
         viewModel.totalPrice
-            .scan(0, accumulator: +)
             .map{ $0.currencyKR() }
-            .subscribe(onNext:{
-                self.totalPrice.text = $0
-            })
+            .observeOn(MainScheduler.instance)
+//            .subscribe(onNext:{ [weak self] in
+//                self?.totalPrice.text = $0
+//            })
+            .bind(to: totalPrice.rx.text)
             .disposed(by: disposeBag)
     }
 
@@ -58,29 +80,24 @@ class MenuViewController: UIViewController {
         // showAlert("Order Fail", "No Orders")
 //        performSegue(withIdentifier: "OrderViewController", sender: nil)
         
-        viewModel.totalPrice.onNext(100)
+//        viewModel.totalPrice.onNext(100)
         
         
     }
-    func updateUI(){
-        itemCountLabel.text = "\(viewModel.itemsCount)"
-//        totalPrice.text = viewModel.totalPrice.currencyKR()
-    }
+
 }
 
-extension MenuViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return viewModel.menuArray.count
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MenuItemTableViewCell") as! MenuItemTableViewCell
-
-        let menu = viewModel.menuArray[indexPath.row]
-        cell.title.text = menu.name
-        cell.price.text = "\(menu.price)"
-        cell.count.text = "\(menu.count)"
-
-        return cell
-    }
-}
+//extension MenuViewController: UITableViewDataSource {
+//    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        return viewModel.menuArray.count
+//    }
+//
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "MenuItemTableViewCell") as! MenuItemTableViewCell
+//
+//        let menu = viewModel.menuArray[indexPath.row]
+//
+//
+//        return cell
+//    }
+//}
