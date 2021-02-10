@@ -10,7 +10,6 @@ rxSwift의 권위자 곰튀김님의
 - subscribe 로 데이터 사용
 - Disposable 로 작업 취소
 
-
 2.Sugar API
 - 간단한 생성 : just, from
 - 필터링 : filter, take
@@ -22,22 +21,16 @@ rxSwift의 권위자 곰튀김님의
 - Completed / Error
 - Disposabled
 
-
 4.순환참조와 메모리 관리
 - Unfinished Observable / Memory Leak
-
 
 5.쓰레드 분기
 - DispatchQueue, OperationQueue
 - observeOn, subscribeOn
 
-
 6.Subject
 - Data Control
-- Hot Observable / Cold Observable
-
 
 7.RxCocoa
-- UI 작업의 특징
-- Observable / Driver
+- Observable / Driver 
 - Subject / Relay
