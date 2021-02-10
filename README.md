@@ -32,10 +32,6 @@ rxSwift의 권위자 곰튀김님의
 - observeOn, subscribeOn
 
 
-
-
-**RxSwift 활용범위 넓히기 - UI 컴포넌트와의 연동**
-
 6.Subject
 - Data Control
 - Hot Observable / Cold Observable
