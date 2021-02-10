@@ -8,14 +8,14 @@
 
 import Foundation
 import RxSwift
-import RxCocoa
+import RxRelay
 
 class MenuListViewModel{
     
     
     //    lazy var menuObservable = Observable.just(menuArray)
     
-    var menuObservable = BehaviorSubject<[Menu]>(value: [])
+    var menuObservable = BehaviorRelay<[Menu]>(value: []) // 에러가 발생해도 서브젝트가 끊어지지 않도록
     
     lazy var itemsCount = menuObservable.map{
         $0.map{ $0.count }.reduce(0, +)
@@ -73,7 +73,8 @@ class MenuListViewModel{
             }
             .take(1) // observable 이 단한번만 실행되도록
             .subscribe(onNext:{
-                self.menuObservable.onNext($0)
+//                self.menuObservable.onNext($0)
+                self.menuObservable.accept($0) //에러나 컴플릿 없이 오로지 받는 작업뿐. subject 대신 relay
             })
     }
     
@@ -81,7 +82,7 @@ class MenuListViewModel{
     func changeCount(item: Menu, increase: Int){
         _ = menuObservable
             .map{ menuArray in
-                menuArray.map { m in
+                menuArray.map { m -> Menu in
                     if m.id == item.id{
                         if m.id == item.count{
                         }
@@ -93,7 +94,8 @@ class MenuListViewModel{
             }
             .take(1) // observable 이 단한번만 실행되도록
             .subscribe(onNext:{
-                self.menuObservable.onNext($0)
+//                self.menuObservable.onNext($0)
+                self.menuObservable.accept($0)
             })
     }
 }

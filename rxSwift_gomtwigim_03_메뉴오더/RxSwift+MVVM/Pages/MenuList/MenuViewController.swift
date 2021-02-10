@@ -44,8 +44,11 @@ class MenuViewController: UIViewController {
 //            .subscribe(onNext: {
 //                self.itemCountLabel.text = $0
 //            })
-            .observeOn(MainScheduler.instance)
-            .bind(to: itemCountLabel.rx.text) // 순환참조 없이 사용가능
+            .asDriver(onErrorJustReturn: "") // 에러가 발생해도 스트림이 끊어지지 않도록 
+            .drive(itemCountLabel.rx.text)
+//            .catchErrorJustReturn("")
+//            .observeOn(MainScheduler.instance)
+//            .bind(to: itemCountLabel.rx.text) // 순환참조 없이 사용가능
             .disposed(by: disposeBag)
         
         viewModel.totalPrice
