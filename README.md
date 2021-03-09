@@ -3,7 +3,7 @@
 rxSwift의 권위자 곰튀김님의 
 ### **RxSwift+MVVM** 
 강의를 수강, 정리한 내용
-> [링크](https://github.com/iamchiwon/RxSwift_In_4_Hours)
+> [곰튀김님](https://github.com/iamchiwon/RxSwift_In_4_Hours)
 
 1. Observable
 - Observable create
